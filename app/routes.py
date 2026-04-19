@@ -7,6 +7,12 @@ from functools import wraps
 
 auth_bp = Blueprint('auth', __name__)
 main_bp = Blueprint('main', __name__)
+
+@main_bp.route('/')
+def index():
+    """Redirect visitors to the login page."""
+    return redirect(url_for('auth.login'))
+
 admin_bp = Blueprint('admin', __name__)
 
 def admin_required(f):
