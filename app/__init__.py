@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
+from datetime import timedelta  # <--- 1. ADD THIS IMPORT
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -16,10 +17,17 @@ def create_app(config_class='config.Config'):
     """Application Factory Pattern"""
     app = Flask(__name__)
     
-    # In a real app, load from config.py. Hardcoded here for illustration.
+    # Existing Configs
     app.config['SECRET_KEY'] = 'dev-secret-key-replace-in-production'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # --- 2. ADD THESE SECURITY LINES HERE ---
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    # ----------------------------------------
 
     # Initialize extensions with app
     db.init_app(app)
@@ -27,11 +35,10 @@ def create_app(config_class='config.Config'):
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    # Global Maintenance Mode Check (Feature 30)
+    # Global Maintenance Mode Check
     @app.before_request
     def check_maintenance():
         from app.models import SystemConfig
-        # Skip maintenance check for static files and admin routes
         if request.path.startswith('/static') or request.path.startswith('/admin'):
             return
         
@@ -40,9 +47,9 @@ def create_app(config_class='config.Config'):
             if config and config.maintenance_mode:
                 return render_template('errors/maintenance.html'), 503
         except Exception:
-            pass # DB not initialized yet
+            pass
 
-    # Custom Error Pages (Feature 25)
+    # Custom Error Pages
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('errors/404.html'), 404

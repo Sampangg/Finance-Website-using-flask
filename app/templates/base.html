@@ -16,16 +16,19 @@
         button:hover { background-color: #0056b3; }
     </style>
 </head>
+<footer style="text-align: center; margin-top: 50px; padding: 20px; color: gray; font-size: 0.8em;">
+    <p>Using a shared computer? Always <strong>Logout</strong> to keep your financial data private.</p>
+</footer>
 <body>
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
-
+        
         {% block content %}{% endblock %}
     </div>
 </body>
