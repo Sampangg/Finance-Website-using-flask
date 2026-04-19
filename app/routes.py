@@ -188,3 +188,14 @@ def add_category():
         else:
             flash("Category already exists.", "info")
     return redirect(url_for('main.settings'))
+
+@main_bp.route('/update-budget-dashboard', methods=['POST'])
+@login_required
+def update_budget_dashboard():
+    """Quickly update budget from the dashboard."""
+    new_budget = request.form.get('daily_budget')
+    if new_budget:
+        current_user.daily_budget = float(new_budget)
+        db.session.commit()
+        flash(f"Daily budget updated to {current_user.currency}{new_budget}", "success")
+    return redirect(url_for('main.dashboard'))

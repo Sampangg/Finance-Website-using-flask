@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from datetime import timedelta  # <--- 1. ADD THIS IMPORT
+from datetime import timedelta
+import os
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -14,34 +15,34 @@ login_manager.login_message_category = 'info'
 csrf = CSRFProtect()
 
 def create_app(config_class='config.Config'):
-    """Application Factory Pattern"""
     app = Flask(__name__)
     
-    # Existing Configs
-    app.config['SECRET_KEY'] = 'dev-secret-key-replace-in-production'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # --- 2. ADD THESE SECURITY LINES HERE ---
+    # Security and Session Config
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
     app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    # ----------------------------------------
 
-    # Initialize extensions with app
+    # Database Logic: SQLite for local, PostgreSQL for Render
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url and db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///finance.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    # Global Maintenance Mode Check
     @app.before_request
     def check_maintenance():
         from app.models import SystemConfig
         if request.path.startswith('/static') or request.path.startswith('/admin'):
             return
-        
         try:
             config = SystemConfig.query.first()
             if config and config.maintenance_mode:
@@ -49,7 +50,6 @@ def create_app(config_class='config.Config'):
         except Exception:
             pass
 
-    # Custom Error Pages
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('errors/404.html'), 404
@@ -59,7 +59,6 @@ def create_app(config_class='config.Config'):
         db.session.rollback()
         return render_template('errors/500.html'), 500
 
-    # Register Blueprints
     from app.routes import main_bp, auth_bp, admin_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
