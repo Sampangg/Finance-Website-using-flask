@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>User Settings</h2>
+    <a href="{{ url_for('main.dashboard') }}" style="text-decoration: none;">&larr; Back to Dashboard</a>
+</div>
+
+<hr>
+
+<section style="margin-bottom: 40px;">
+    <h3>Preferences</h3>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="form-group">
+            <label>Select Currency</label>
+            <select name="currency" style="width: 100%; padding: 10px; margin-top: 5px;">
+                <option value="Rs." {% if current_user.currency == 'Rs.' %}selected{% endif %}>NPR (Rs.)</option>
+                <option value="$" {% if current_user.currency == '$' %}selected{% endif %}>USD ($)</option>
+                <option value="€" {% if current_user.currency == '€' %}selected{% endif %}>EUR (€)</option>
+                <option value="£" {% if current_user.currency == '£' %}selected{% endif %}>GBP (£)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Daily Spending Limit</label>
+            <input type="number" name="daily_budget" value="{{ current_user.daily_budget }}" step="0.01">
+        </div>
+        <button type="submit">Save Preferences</button>
+    </form>
+</section>
+
+<section>
+    <h3>Manage Categories</h3>
+    <p style="color: gray; font-size: 0.9em;">Add custom categories like "Rent", "Momos", or "Travel".</p>
+    
+    <form method="POST" action="{{ url_for('main.add_category') }}" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="text" name="name" placeholder="New Category Name" required style="flex: 2;">
+        <button type="submit" style="flex: 1; background-color: #28a745;">Add Category</button>
+    </form>
+
+    <ul style="list-style: none; padding: 0;">
+        {% for cat in categories %}
+            <li style="padding: 8px; border-bottom: 1px solid #eee;">{{ cat.name }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

@@ -150,3 +150,41 @@ def toggle_maintenance():
     db.session.commit()
     flash(f"Maintenance mode is now {'ON' if config.maintenance_mode else 'OFF'}", "warning")
     return redirect(url_for('admin.admin_dashboard'))
+
+@main_bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    """Feature 7 & 24: Profile Management and Currency Selector."""
+    if request.method == 'POST':
+        # Update Currency
+        if 'currency' in request.form:
+            current_user.currency = request.form.get('currency')
+            db.session.commit()
+            flash(f"Currency updated to {current_user.currency}", "success")
+        
+        # Update Daily Budget
+        if 'daily_budget' in request.form:
+            current_user.daily_budget = float(request.form.get('daily_budget'))
+            db.session.commit()
+            flash("Daily budget updated!", "success")
+
+    # Get categories created by this user or global ones
+    user_categories = Category.query.filter((Category.is_global == True) | (Category.name != "")).all()
+    return render_template('settings.html', categories=user_categories)
+
+@main_bp.route('/category/add', methods=['POST'])
+@login_required
+def add_category():
+    """Allow users to create their own spending categories."""
+    name = request.form.get('name').strip()
+    if name:
+        # Check if category already exists
+        existing = Category.query.filter_by(name=name).first()
+        if not existing:
+            new_cat = Category(name=name, is_global=False)
+            db.session.add(new_cat)
+            db.session.commit()
+            flash(f"Category '{name}' added!", "success")
+        else:
+            flash("Category already exists.", "info")
+    return redirect(url_for('main.settings'))
