@@ -4,6 +4,7 @@ from app import db, bcrypt
 from app.models import User, Transaction, Category, SystemConfig
 from app.services import FinanceService
 from functools import wraps
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
 main_bp = Blueprint('main', __name__)
@@ -95,17 +96,25 @@ def dashboard():
 @main_bp.route('/transaction/add', methods=['POST'])
 @login_required
 def add_transaction():
-    """Feature 9 & 10 & 21 (Validation via form/backend)."""
     amount = float(request.form.get('amount'))
     if amount < 0:
         flash('Amount cannot be negative.', 'danger')
         return redirect(url_for('main.dashboard'))
         
+    # Grab the custom date from the HTML form
+    date_str = request.form.get('transaction_date')
+    try:
+        # Convert the HTML string (YYYY-MM-DD) into a Python Date object
+        tx_date = datetime.strptime(date_str, '%Y-%m-%d') if date_str else datetime.utcnow()
+    except ValueError:
+        tx_date = datetime.utcnow() # Fallback just in case
+        
     tx = Transaction(
         amount=amount,
         title=request.form.get('title'),
         category_id=request.form.get('category_id'),
-        user_id=current_user.id
+        user_id=current_user.id,
+        date=tx_date # Inject the custom date here!
     )
     db.session.add(tx)
     db.session.commit()
@@ -122,6 +131,7 @@ def delete_transaction(id):
         db.session.commit()
         flash('Transaction deleted.', 'info')
     return redirect(url_for('main.dashboard'))
+
 
 @main_bp.route('/export')
 @login_required

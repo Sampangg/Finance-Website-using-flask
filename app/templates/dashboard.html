@@ -43,6 +43,12 @@
                 <label>Title / Description</label>
                 <input type="text" name="title" required>
             </div>
+            
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="transaction_date" id="transaction_date" required>
+            </div>
+            
             <div class="form-group">
                 <label>Category</label>
                 <select name="category_id" required>
@@ -54,6 +60,12 @@
             </div>
             <button type="submit" style="width: 100%; margin-top: 10px;">Add Transaction</button>
         </form>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('transaction_date').valueAsDate = new Date();
+            });
+        </script>
     </div>
 
     <div style="flex: 1.5; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">

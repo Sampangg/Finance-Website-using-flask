@@ -3,12 +3,12 @@
 {% block content %}
 <div style="max-width: 400px; margin: 0 auto;">
     <h2 style="text-align: center;">Welcome Back</h2>
-    <form method="POST" action="{{ url_for('auth.login') }}">
+    <form method="POST" action="{{ url_for('auth.login') }}" autocomplete="off">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         
         <div class="form-group">
             <label>Email</label>
-            <input type="email" name="email" autocomplete="username" required>
+            <input type="email" name="email" autocomplete="off" required>
         </div>
         
         <div class="form-group">

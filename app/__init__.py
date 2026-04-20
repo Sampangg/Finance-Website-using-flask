@@ -64,4 +64,23 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
+    # Register Blueprints
+    from app.routes import main_bp, auth_bp, admin_bp
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    # --- NEW: Inject Default Categories ---
+    with app.app_context():
+        from app.models import Category
+        try:
+            defaults = ['Food', 'Transportation', 'Entertainment', 'Vehicle Fuel', 'Utilities']
+            for cat_name in defaults:
+                # Check if it already exists to prevent duplicates
+                if not Category.query.filter_by(name=cat_name).first():
+                    db.session.add(Category(name=cat_name, is_global=True))
+            db.session.commit()
+        except Exception:
+            pass # Fails silently if the database isn't fully set up yet
+
     return app
