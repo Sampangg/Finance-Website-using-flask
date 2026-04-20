@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Tracker</title>
     <style>
-        /* Modern Fonts and Wider Layout */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #333; }
         
         /* Navigation Bar */
         .navbar { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .navbar a { text-decoration: none; color: #333; font-weight: 600; margin-left: 20px; }
-        .navbar a:hover { color: #007bff; }
-        .navbar .logo { font-size: 1.5em; font-weight: 700; color: #007bff; margin-left: 0; }
+        .navbar .nav-links a { text-decoration: none; color: #333; font-weight: 600; margin-left: 20px; }
+        .navbar .nav-links a:hover { color: #007bff; }
+        .navbar .logo { font-size: 1.5em; font-weight: 700; color: #007bff; text-decoration: none; }
         
-        /* Wider Container */
+        /* Container */
         .container { max-width: 1200px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
         /* Forms and Alerts */
@@ -23,15 +22,27 @@
         .alert-success { background-color: #d4edda; color: #155724; }
         .alert-danger { background-color: #f8d7da; color: #721c24; }
         .form-group { margin-bottom: 15px; position: relative; }
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        /* 16px font prevents iOS auto-zoom on forms */
+        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], select { 
+            width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 16px; 
+        }
         button { background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; }
         button:hover { background-color: #0056b3; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; text-align: center; padding: 15px 20px; gap: 15px; }
+            .navbar .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .navbar .nav-links a { margin: 0 10px; }
+            .container { margin: 15px; padding: 20px; }
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
         <a href="{{ url_for('main.index') }}" class="logo">Finance Tracker</a>
-        <div>
+        <div class="nav-links">
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('main.settings') }}">Settings</a>
