@@ -26,9 +26,17 @@ def create_app(config_class='config.Config'):
 
     # Database Logic: SQLite for local, PostgreSQL for Render
     db_url = os.environ.get('DATABASE_URL')
+    
+    # 1. FORCE THE APP TO CONFESS WHAT IT SEES:
+    print(f"====== DEBUG: Render gave us this URL: {db_url} ======") 
+    
     if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
     
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///finance.db'
+    
+    # 2. FORCE THE APP TO CONFESS WHAT IT IS USING:
+    print(f"====== DEBUG: Flask is connecting to: {app.config['SQLALCHEMY_DATABASE_URI']} ======")
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///finance.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
