@@ -65,17 +65,20 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    # --- NEW: Inject Default Categories ---
+   # --- Inject Default Categories ---
     with app.app_context():
+        # 1. Force database tables to exist before we try to add anything!
+        db.create_all() 
+        
         from app.models import Category
         try:
             defaults = ['Food', 'Transportation', 'Entertainment', 'Vehicle Fuel', 'Utilities']
             for cat_name in defaults:
-                # Check if it already exists to prevent duplicates
                 if not Category.query.filter_by(name=cat_name).first():
                     db.session.add(Category(name=cat_name, is_global=True))
             db.session.commit()
-        except Exception:
-            pass # Fails silently if the database isn't fully set up yet
+        except Exception as e:
+            # 2. Print the exact error so it's no longer a secret!
+            print(f"DATABASE INJECTION ERROR: {e}") 
 
     return app
