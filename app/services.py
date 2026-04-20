@@ -59,7 +59,31 @@ class FinanceService:
             "labels": [row[0] for row in data],
             "values": [row[1] for row in data]
         }
-
+    
+    @staticmethod
+    def get_weekly_chart_data(user_id):
+        """Calculate total spending for each day of the current week (Mon-Sun)."""
+        today = datetime.utcnow().date()
+        start_of_week = today - timedelta(days=today.weekday()) # Gets Monday
+        
+        # Initialize a dictionary with 0.0 for all 7 days (0=Mon, 6=Sun)
+        daily_totals = {i: 0.0 for i in range(7)}
+        
+        # Get all transactions for this user from this week
+        start_datetime = datetime(start_of_week.year, start_of_week.month, start_of_week.day)
+        transactions = Transaction.query.filter(
+            Transaction.user_id == user_id,
+            Transaction.date >= start_datetime
+        ).all()
+        
+        # Add the transaction amounts to the correct day
+        for tx in transactions:
+            day_index = tx.date.weekday()
+            daily_totals[day_index] += tx.amount
+            
+        # Return a simple list of the 7 totals in order
+        return [daily_totals[i] for i in range(7)]
+    
     @staticmethod
     def export_transactions_csv(user_id):
         """Feature 19: Export transaction history to CSV."""

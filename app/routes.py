@@ -150,6 +150,13 @@ def chart_data():
     """Feature 17 API endpoint for Chart.js."""
     return jsonify(FinanceService.get_chart_data(current_user.id))
 
+@main_bp.route('/api/weekly-chart-data')
+@login_required
+def weekly_chart_data():
+    """API endpoint for the Weekly Bar Chart."""
+    values = FinanceService.get_weekly_chart_data(current_user.id)
+    return jsonify({"values": values})
+
 # ================= ADMIN ROUTES =================
 
 @admin_bp.route('/dashboard')

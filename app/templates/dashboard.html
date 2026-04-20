@@ -54,7 +54,7 @@
                 <select name="category_id" required>
                     <option value="">Select a category...</option>
                     {% for cat in categories %}
-                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -67,26 +67,26 @@
             });
         </script>
     </div>
-
+    
     <div style="flex: 1.5; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
         <h3>Recent Transactions</h3>
         <ul style="list-style: none; padding: 0; max-height: 350px; overflow-y: auto;">
             {% for tx in summary.recent_transactions %}
-                <li style="padding: 15px 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="font-size: 1.1em;">{{ tx.title }}</strong><br>
-                        <small style="color: #888;">{{ tx.date.strftime('%b %d, %Y') }}</small>
-                    </div>
-                    <div style="display: flex; align-items: center;">
-                        <span style="color: #dc3545; font-weight: 600; font-size: 1.1em;">-{{ current_user.currency }}{{ tx.amount }}</span>
-                        <form method="POST" action="{{ url_for('main.delete_transaction', id=tx.id) }}" style="margin: 0;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                            <button type="submit" style="background: none; color: #dc3545; padding: 5px 10px; margin-left: 15px; font-size: 1.2em;" title="Delete">×</button>
-                        </form>
-                    </div>
-                </li>
+            <li style="padding: 15px 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="font-size: 1.1em;">{{ tx.title }}</strong><br>
+                    <small style="color: #888;">{{ tx.date.strftime('%b %d, %Y') }}</small>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #dc3545; font-weight: 600; font-size: 1.1em;">-{{ current_user.currency }}{{ tx.amount }}</span>
+                    <form method="POST" action="{{ url_for('main.delete_transaction', id=tx.id) }}" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" style="background: none; color: #dc3545; padding: 5px 10px; margin-left: 15px; font-size: 1.2em;" title="Delete">×</button>
+                    </form>
+                </div>
+            </li>
             {% else %}
-                <p style="color: #777;">No transactions yet! Start logging your expenses.</p>
+            <p style="color: #777;">No transactions yet! Start logging your expenses.</p>
             {% endfor %}
         </ul>
     </div>
@@ -94,7 +94,7 @@
 
 <div style="display: flex; gap: 30px;">
     <div style="flex: 1; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
-        <h3 style="text-align: center; color: #555;">Spending by Category</h3>
+        <h3 style="text-align: center; color: #555;">Spending by Category (This Month)</h3>
         <div style="position: relative; height: 300px; width: 100%;">
             <canvas id="expenseChart"></canvas>
         </div>
@@ -113,36 +113,38 @@
     document.addEventListener("DOMContentLoaded", function() {
         // Pie Chart Logic (Already existing via API)
         fetch("{{ url_for('main.chart_data') }}")
-            .then(response => response.json())
-            .then(data => {
-                new Chart(document.getElementById('expenseChart').getContext('2d'), {
-                    type: 'pie',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.values,
-                            backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d']
-                        }]
-                    },
-                    options: { maintainAspectRatio: false }
-                });
+        .then(response => response.json())
+        .then(data => {
+            new Chart(document.getElementById('expenseChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d']
+                    }]
+                },
+                options: { maintainAspectRatio: false }
             });
-
+        });
+        
         // Bar Chart Logic for Weekly Overview
-        // In a real app, this data should come from your FinanceService.
-        // For now, we initialize an empty/placeholder chart that looks great.
-        new Chart(document.getElementById('weeklyBarChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Spent ({{ current_user.currency }})',
-                    data: [0, 0, 0, 0, 0, 0, 0], // Replaced by backend data later
-                    backgroundColor: '#007bff',
-                    borderRadius: 4
-                }]
-            },
-            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        fetch("{{ url_for('main.weekly_chart_data') }}")
+        .then(response => response.json())
+        .then(data => {
+            new Chart(document.getElementById('weeklyBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Spent ({{ current_user.currency }})',
+                        data: data.values, // This now grabs the live data!
+                        backgroundColor: '#007bff',
+                        borderRadius: 4
+                    }]
+                },
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
         });
     });
 </script>
