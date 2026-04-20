@@ -10,8 +10,8 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Redirect visitors to the login page."""
-    return redirect(url_for('auth.login'))
+    """Show the landing page instead of redirecting."""
+    return render_template('index.html')
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -32,13 +32,16 @@ def register():
     
     if request.method == 'POST':
         username = request.form.get('username')
-        # .lower() ensures "Admin@Email.com" becomes "admin@email.com"
         email = request.form.get('email').lower().strip()
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password') # New confirmation field
         
+        # Check if passwords match
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'danger')
+            return redirect(url_for('auth.register'))
+            
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        
-        # Explicitly set is_active=True just in case the database default fails
         user = User(username=username, email=email, password_hash=hashed_password, is_active=True)
         
         db.session.add(user)
@@ -203,10 +206,9 @@ def add_category():
 @main_bp.route('/update-budget-dashboard', methods=['POST'])
 @login_required
 def update_budget_dashboard():
-    """Quickly update budget from the dashboard."""
-    new_budget = request.form.get('daily_budget')
+    new_budget = request.form.get('monthly_budget')
     if new_budget:
-        current_user.daily_budget = float(new_budget)
+        current_user.monthly_budget = float(new_budget)
         db.session.commit()
-        flash(f"Daily budget updated to {current_user.currency}{new_budget}", "success")
+        flash(f"Monthly budget updated to {current_user.currency}{new_budget}", "success")
     return redirect(url_for('main.dashboard'))

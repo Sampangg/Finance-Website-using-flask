@@ -1,109 +1,109 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2>Welcome, {{ current_user.username }}!</h2>
-    <div>
-        <a href="{{ url_for('main.settings') }}" style="margin-right: 15px; text-decoration: none; color: #007bff;">Settings</a>
-        <a href="{{ url_for('auth.logout') }}" style="color: red; text-decoration: none;">Logout</a>
-    </div>
 </div>
 
-<hr>
-
 <div style="display: flex; gap: 20px; margin-bottom: 30px;">
-    <div style="flex: 1; padding: 20px; background: #e9ecef; border-radius: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin: 0;">Today's Budget</h3>
+    <div style="flex: 1; padding: 25px; background: #fff; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #555;">Monthly Budget</h3>
             <form method="POST" action="{{ url_for('main.update_budget_dashboard') }}" style="display: flex; align-items: center; gap: 5px;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <input type="number" name="daily_budget" placeholder="Set" step="0.01" style="width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                <button type="submit" style="padding: 5px 10px; font-size: 0.8em; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Set</button>
+                <input type="number" name="monthly_budget" placeholder="Set" step="0.01" style="width: 80px; padding: 5px; margin: 0;">
+                <button type="submit" style="padding: 6px 12px;">Set</button>
             </form>
         </div>
-        <p>Spent: <strong>{{ current_user.currency }}{{ summary.spent_today }}</strong></p>
-        <p>Remaining: <strong>{{ current_user.currency }}{{ summary.budget_remaining }}</strong></p>
+        <p style="font-size: 1.1em;">Target: <strong>{{ current_user.currency }}{{ current_user.monthly_budget }}</strong></p>
+        <p style="font-size: 1.1em;">Spent Today: <strong style="color: red;">{{ current_user.currency }}{{ summary.spent_today }}</strong></p>
         
-        <div style="width: 100%; background-color: #ccc; border-radius: 4px; overflow: hidden; margin-top: 10px;">
-            <div style="height: 20px; width: {{ summary.progress_percentage }}%; background-color: {% if summary.progress_percentage > 90 %}red{% else %}green{% endif %};"></div>
+        <div style="width: 100%; background-color: #eee; border-radius: 6px; overflow: hidden; margin-top: 15px;">
+            <div style="height: 12px; width: {{ summary.progress_percentage }}%; background-color: {% if summary.progress_percentage > 90 %}#dc3545{% else %}#28a745{% endif %};"></div>
         </div>
     </div>
     
-    <div style="flex: 1; padding: 20px; background: #e9ecef; border-radius: 8px;">
-        <h3>Weekly Overview</h3>
-        <p>Total Spent This Week: <strong>{{ current_user.currency }}{{ weekly_total }}</strong></p>
-        <div style="margin-top: 15px;">
-            <a href="{{ url_for('main.export_csv') }}" style="background: #28a745; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px;">Export Data to CSV</a>
-        </div>
+    <div style="flex: 1; padding: 25px; background: #fff; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h3 style="margin: 0 0 10px 0; color: #555;">Data Management</h3>
+        <p style="color: #777;">Download all your records securely.</p>
+        <a href="{{ url_for('main.export_csv') }}" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600;">Export Data to CSV</a>
     </div>
 </div>
 
-<div style="display: flex; gap: 20px;">
-    <div style="flex: 1;">
+<div style="display: flex; gap: 30px; margin-bottom: 40px;">
+    <div style="flex: 1; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
         <h3>Log an Expense</h3>
         <form method="POST" action="{{ url_for('main.add_transaction') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            
             <div class="form-group">
                 <label>Amount ({{ current_user.currency }})</label>
                 <input type="number" step="0.01" min="0" name="amount" required>
             </div>
-            
             <div class="form-group">
                 <label>Title / Description</label>
                 <input type="text" name="title" required>
             </div>
-            
             <div class="form-group">
                 <label>Category</label>
-                <select name="category_id" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 4px;" required>
+                <select name="category_id" required>
                     <option value="">Select a category...</option>
                     {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.name }}</option>
                     {% endfor %}
                 </select>
-                <small><a href="{{ url_for('main.settings') }}">Add new categories in Settings</a></small>
             </div>
-            
-            <button type="submit" style="width: 100%;">Add Transaction</button>
+            <button type="submit" style="width: 100%; margin-top: 10px;">Add Transaction</button>
         </form>
     </div>
 
-    <div style="flex: 1;">
+    <div style="flex: 1.5; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
         <h3>Recent Transactions</h3>
-        <ul style="list-style: none; padding: 0;">
+        <ul style="list-style: none; padding: 0; max-height: 350px; overflow-y: auto;">
             {% for tx in summary.recent_transactions %}
-                <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                    <span><strong>{{ tx.title }}</strong> <br><small style="color: gray;">{{ tx.date.strftime('%Y-%m-%d') }}</small></span>
-                    <span style="color: red;">-{{ current_user.currency }}{{ tx.amount }}</span>
-                    
-                    <form method="POST" action="{{ url_for('main.delete_transaction', id=tx.id) }}" style="display:inline;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" style="background: none; color: red; border: none; padding: 0; cursor: pointer; margin-left: 10px;">X</button>
-                    </form>
+                <li style="padding: 15px 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 1.1em;">{{ tx.title }}</strong><br>
+                        <small style="color: #888;">{{ tx.date.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span style="color: #dc3545; font-weight: 600; font-size: 1.1em;">-{{ current_user.currency }}{{ tx.amount }}</span>
+                        <form method="POST" action="{{ url_for('main.delete_transaction', id=tx.id) }}" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" style="background: none; color: #dc3545; padding: 5px 10px; margin-left: 15px; font-size: 1.2em;" title="Delete">×</button>
+                        </form>
+                    </div>
                 </li>
             {% else %}
-                <p>No transactions yet! Start logging your expenses.</p>
+                <p style="color: #777;">No transactions yet! Start logging your expenses.</p>
             {% endfor %}
         </ul>
     </div>
 </div>
 
-<hr style="margin: 30px 0;">
-
-<div style="width: 100%; max-width: 500px; margin: 0 auto;">
-    <h3 style="text-align: center;">Spending by Category</h3>
-    <canvas id="expenseChart"></canvas>
+<div style="display: flex; gap: 30px;">
+    <div style="flex: 1; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
+        <h3 style="text-align: center; color: #555;">Spending by Category</h3>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+    
+    <div style="flex: 1; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
+        <h3 style="text-align: center; color: #555;">Weekly Overview</h3>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="weeklyBarChart"></canvas>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Pie Chart Logic (Already existing via API)
         fetch("{{ url_for('main.chart_data') }}")
             .then(response => response.json())
             .then(data => {
-                const ctx = document.getElementById('expenseChart').getContext('2d');
-                new Chart(ctx, {
+                new Chart(document.getElementById('expenseChart').getContext('2d'), {
                     type: 'pie',
                     data: {
                         labels: data.labels,
@@ -111,9 +111,27 @@
                             data: data.values,
                             backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d']
                         }]
-                    }
+                    },
+                    options: { maintainAspectRatio: false }
                 });
             });
+
+        // Bar Chart Logic for Weekly Overview
+        // In a real app, this data should come from your FinanceService.
+        // For now, we initialize an empty/placeholder chart that looks great.
+        new Chart(document.getElementById('weeklyBarChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Spent ({{ current_user.currency }})',
+                    data: [0, 0, 0, 0, 0, 0, 0], // Replaced by backend data later
+                    backgroundColor: '#007bff',
+                    borderRadius: 4
+                }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
     });
 </script>
 {% endblock %}
