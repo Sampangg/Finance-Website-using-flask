@@ -19,10 +19,17 @@ def create_app(config_class='config.Config'):
     
     # Security and Session Config
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+    
+    # Increase session lifetime to 7 days for mobile convenience
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7) 
     app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    
+    # NEW: Mobile-friendly "Remember Me" Cookie Rules
+    app.config['REMEMBER_COOKIE_SECURE'] = True
+    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
 
     # Database Logic: SQLite for local, PostgreSQL for Render
     db_url = os.environ.get('DATABASE_URL')
