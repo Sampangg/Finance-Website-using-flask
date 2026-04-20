@@ -27,34 +27,45 @@ def admin_required(f):
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """Feature 1 & 6: Registration with Bcrypt."""
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     
     if request.method == 'POST':
         username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password') # Feature 3: Masked in frontend HTML
+        # .lower() ensures "Admin@Email.com" becomes "admin@email.com"
+        email = request.form.get('email').lower().strip()
+        password = request.form.get('password')
         
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        user = User(username=username, email=email, password_hash=hashed_password)
+        
+        # Explicitly set is_active=True just in case the database default fails
+        user = User(username=username, email=email, password_hash=hashed_password, is_active=True)
+        
         db.session.add(user)
         db.session.commit()
-        flash('Account created successfully!', 'success') # Feature 22: Flash Notifs
+        flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Feature 2 & 5: Login and Remember Me."""
     if request.method == 'POST':
-        user = User.query.filter_by(email=request.form.get('email')).first()
-        if user and user.is_active and bcrypt.check_password_hash(user.password_hash, request.form.get('password')):
+        email = request.form.get('email').lower().strip()
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            flash('Login Unsuccessful. That email is not registered.', 'danger')
+        elif not bcrypt.check_password_hash(user.password_hash, password):
+            flash('Login Unsuccessful. Incorrect password.', 'danger')
+        elif not user.is_active:
+            flash('Login Unsuccessful. This account is deactivated.', 'warning')
+        else:
             remember = True if request.form.get('remember') else False
             login_user(user, remember=remember)
             return redirect(url_for('main.dashboard'))
-        else:
-            flash('Login Unsuccessful. Please check email and password or account status.', 'danger')
+            
     return render_template('auth/login.html')
 
 @auth_bp.route('/logout')
