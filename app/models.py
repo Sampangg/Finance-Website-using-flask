@@ -31,9 +31,6 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     is_global = db.Column(db.Boolean, default=False) 
-    
-    # This links categories to transactions
-    transactions = db.relationship('Transaction', backref='category', lazy=True)
 
 class Transaction(db.Model):
     """Core Expense Log Model."""
