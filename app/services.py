@@ -26,8 +26,8 @@ class FinanceService:
             .scalar() or 0.0
 
         user = User.query.get(user_id)
-        budget_remaining = user.daily_budget - spent_today
-        progress_percentage = min(100, (spent_today / user.daily_budget * 100)) if user.daily_budget > 0 else 0
+        budget_remaining = user.monthly_budget - spent_today
+        progress_percentage = min(100, (spent_today / user.monthly_budget * 100)) if user.monthly_budget > 0 else 0= db.Column(db.String(128), nullable=False)
 
         return {
             'recent_transactions': recent_tx,
