@@ -59,11 +59,6 @@ def create_app(config_class='config.Config'):
         db.session.rollback()
         return render_template('errors/500.html'), 500
 
-    from app.routes import main_bp, auth_bp, admin_bp
-    app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-
     # Register Blueprints
     from app.routes import main_bp, auth_bp, admin_bp
     app.register_blueprint(main_bp)
