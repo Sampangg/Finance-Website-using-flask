@@ -101,8 +101,14 @@
     </div>
     
     <div style="flex: 1; background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
-        <h3 style="text-align: center; color: #555;">Weekly Overview</h3>
-        <div style="position: relative; height: 300px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h3 style="color: #555; margin: 0 0 5px 0;">Weekly Overview</h3>
+            <span style="font-size: 1.2em; font-weight: 600; color: #333; background: #f8f9fa; padding: 5px 15px; border-radius: 20px; border: 1px solid #ddd;">
+                Total This Week: <span style="color: #dc3545;">{{ current_user.currency }}{{ weekly_total }}</span>
+            </span>
+        </div>
+        
+        <div style="position: relative; height: 260px; width: 100%;">
             <canvas id="weeklyBarChart"></canvas>
         </div>
     </div>

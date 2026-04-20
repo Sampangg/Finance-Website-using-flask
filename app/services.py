@@ -20,9 +20,12 @@ class FinanceService:
         # Feature 18: Budget Progress Bar Math
         today = datetime.utcnow().date()
         today_start = datetime(today.year, today.month, today.day)
+        tomorrow_start = today_start + timedelta(days=1) # NEW: Stop counting at midnight tonight!
         
         spent_today = db.session.query(func.sum(Transaction.amount))\
-            .filter(Transaction.user_id == user_id, Transaction.date >= today_start)\
+            .filter(Transaction.user_id == user_id, 
+                    Transaction.date >= today_start,
+                    Transaction.date < tomorrow_start)\
             .scalar() or 0.0
 
         user = User.query.get(user_id)
